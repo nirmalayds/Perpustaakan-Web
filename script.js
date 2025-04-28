@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.querySelectorAll('.read-btn').forEach(button => {
     button.addEventListener('click', function() {
-        window.location.href = 'login-user.html';
+        window.location.href = 'index.html';
     });
 });
 
