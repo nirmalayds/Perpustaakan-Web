@@ -74,8 +74,6 @@ document.querySelectorAll('.read-btn').forEach(button => {
     });
 });
 
-
-
 // Smooth Scrolling for Anchor Links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
@@ -176,11 +174,33 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     bookGrid.parentNode.insertBefore(notFoundMessage, bookGrid.nextSibling);
 
+     function scrollToResults() {
+        let targetElement;
+        const anyResults = document.querySelector('.book-card[style*="display: block"]');
+        
+        if (notFoundMessage.style.display === 'block') {
+            targetElement = notFoundMessage;
+        } else if (anyResults) {
+            targetElement = bookGrid;
+        } else {
+            targetElement = searchInput; // Fallback ke search input
+        }
+    
+        const offset = 100; // Sesuaikan dengan tinggi navbar/header
+        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - offset;
+        
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+    }
+
     function showNotFoundMessage(keyword) {
         document.getElementById('search-keyword').textContent = keyword;
         notFoundMessage.style.display = 'block';
         setTimeout(() => {
             notFoundMessage.style.opacity = '1';
+            scrollToResults();
         }, 10);
         bookGrid.style.opacity = '0.5';
     }
@@ -219,6 +239,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotFoundMessage(searchTerm);
             } else {
                 hideNotFoundMessage();
+                if (searchTerm !== '') {
+                    // Hanya scroll jika ada action pencarian (bukan saat load awal)
+                    setTimeout(scrollToResults, 300);
+                }
             }
 
             bookGrid.style.opacity = '1';
