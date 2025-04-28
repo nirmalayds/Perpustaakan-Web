@@ -83,7 +83,7 @@ document.getElementById("logout-btn")?.addEventListener("click", (e) => {
   e.preventDefault();
   signOut(auth).then(() => {
     sessionStorage.removeItem('currentUser');
-    window.location.href = "landing-page.html";
+    window.location.href = "index.html";
   }).catch((error) => {
     console.error("Gagal logout:", error);
     alert("Gagal logout: " + error.message);
@@ -107,7 +107,7 @@ document.getElementById("delete-account-btn")?.addEventListener("click", async (
       
       // Bersihkan storage dan redirect
       sessionStorage.removeItem('currentUser');
-      window.location.href = "landing-page.html";
+      window.location.href = "index.html";
     } catch (error) {
       console.error("Gagal menghapus akun:", error);
       alert("Gagal menghapus akun: " + error.message);
