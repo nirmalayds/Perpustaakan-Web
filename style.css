@@ -178,6 +178,7 @@ button {
 
 .hero-content h1 {
     font-size: 3rem;
+    text-align: left;
     margin-bottom: 20px;
     color: var(--dark-color);
 }
