@@ -26,6 +26,5 @@ Backend & Database : Firebase Authentication, Firestore Database & Realtime Data
 - Nirmala Alayda Savira  (23050974135)
 
 
-Website ini dikembangakn untuk memenuhi tugas mata kuliah Pemrograman Web pada Prodi S1 Pendidikan Teknologi Informasi UNESA 
-- Link Program Studi https://pendidikan-ti.ft.unesa.ac.id
+# Link Program Studi https://pendidikan-ti.ft.unesa.ac.id
   
