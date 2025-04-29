@@ -16,8 +16,8 @@ Fitur utama dalam sistem :
 - Konfirmasi & Riwayat Pemesanan
 
 # Teknologi yang Digunakan 
-Frontend : HTML, CSS, JavaScript
-Backend & Database : Firebase Authentication, Firestore Database & Realtime Database
+- Frontend : HTML, CSS, JavaScript
+- Backend & Database : Firebase Authentication, Firestore Database & Realtime Database
 
 # Tim Pengembangan - Kelompok 6 PTI D
 - Amel Putri Fatika Sari (23050974116)
