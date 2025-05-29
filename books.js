@@ -259,30 +259,75 @@ async function addBook() {
   }
 
   try {
-    //upload gambar
+    // Show loading indicator while uploading
+    const loadingAlert = Swal.fire({
+        title: 'Menambahkan buku...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Upload gambar
     const imageUrl = selectedFile ? await uploadImage(selectedFile) : null;
 
     await addDoc(collection(db, 'books'), {
-      title: title,
-      author: author,
-      isbn: isbn,
-      quantity: quantity,
-      available: quantity,
-      description: description,
-      coverUrl: imageUrl || '', // Simpan URL gambar
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+        title: title,
+        author: author,
+        isbn: isbn,
+        quantity: quantity,
+        available: quantity,
+        description: description,
+        coverUrl: imageUrl || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
     });
 
-    alert('Book added successfully!');
+    // Close loading alert
+    await loadingAlert.close();
+
+    // Success notification with animation
+    await Swal.fire({
+        title: 'Sukses!',
+        text: 'Buku berhasil ditambahkan',
+        icon: 'success',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        background: '#f8f9fa',
+        showClass: {
+            popup: 'animate__animated animate__bounceIn'
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOut'
+        }
+    });
+
     resetForm();
     closeModal();
     await loadBooks(db);
 
-  } catch (error) {
+} catch (error) {
     console.error("Error adding book: ", error);
-    alert("Failed to add book: " + error.message);
-  }  
+    
+    // Error notification
+    await Swal.fire({
+        title: 'Gagal!',
+        html: `
+            <div style="text-align:center;">
+                <p>Gagal menambahkan buku</p>
+                <p style="font-size:14px;color:#777;">${error.message}</p>
+            </div>
+        `,
+        icon: 'error',
+        confirmButtonText: 'Mengerti',
+        confirmButtonColor: '#3085d6',
+        background: '#f8f9fa',
+        showClass: {
+            popup: 'animate__animated animate__headShake'
+        }
+    });
+}
 }
 
 // Fungsi untuk menutup modal
@@ -298,7 +343,6 @@ function resetForm() {
 }
 
 //Mengedit buku
-// Edit form submit
 document.getElementById('edit-book-form').addEventListener('submit', (e) => {
   e.preventDefault();
   updateBook();
@@ -364,54 +408,191 @@ async function updateBook() {
     const description = document.getElementById('edit-book-desc').value.trim();
     const newImageFile = document.getElementById('edit-book-cover').files[0];
 
+    // Validasi input dengan notifikasi yang lebih baik
     if (!currentEditingBookId || !title || !author || !isbn || quantity <= 0 || !description) {
-      alert("Please fill all fields correctly!");
-      return;
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Data Tidak Lengkap',
+            text: 'Harap isi semua kolom dengan benar!',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Mengerti'
+        });
+        return;
     }
   
     try {
-      let imageUrl = currentEditingBookImage;
-      
-      // Jika ada gambar baru, upload
-      if (newImageFile) {
-        imageUrl = await uploadImage(newImageFile);
-      }
-  
-      const bookRef = doc(db, 'books', currentEditingBookId);
-    
-      await updateDoc(bookRef, {
-        title: title,
-        author: author,
-        isbn: isbn,
-        quantity: quantity,
-        description: description,
-        coverUrl: imageUrl || '',
-        updatedAt: serverTimestamp()
-    });
+        // Tampilkan loading saat proses update
+        const loadingAlert = Swal.fire({
+            title: 'Memperbarui Buku...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-    alert('Book updated successfully!');
-    document.getElementById('edit-book-modal').style.display = 'none';
+        let imageUrl = currentEditingBookImage;
+        
+        // Jika ada gambar baru, upload
+        if (newImageFile) {
+            imageUrl = await uploadImage(newImageFile);
+        }
     
-    await loadBooks(db);
-    
-  } catch (error) {
-    console.error("Error updating book: ", error);
-    alert("Failed to update book: " + error.message);
-  }
+        const bookRef = doc(db, 'books', currentEditingBookId);
+        
+        await updateDoc(bookRef, {
+            title: title,
+            author: author,
+            isbn: isbn,
+            quantity: quantity,
+            description: description,
+            coverUrl: imageUrl || '',
+            updatedAt: serverTimestamp()
+        });
+
+        // Tutup loading
+        await loadingAlert.close();
+
+        // Notifikasi sukses
+        await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            html: `
+                <div style="text-align:center;">
+                    <p><strong>${title}</strong> berhasil diperbarui</p>
+                    <p style="font-size:14px;color:#777;">${author} - ${isbn}</p>
+                </div>
+            `,
+            showConfirmButton: true,
+            confirmButtonColor: '#4CAF50',
+            confirmButtonText: 'OK'
+        });
+
+        // Tutup modal dan refresh data
+        document.getElementById('edit-book-modal').style.display = 'none';
+        await loadBooks(db);
+        
+    } catch (error) {
+        console.error("Error updating book: ", error);
+        
+        // Notifikasi error
+        await Swal.fire({
+            icon: 'error',
+            title: 'Gagal Memperbarui',
+            html: `
+                <div style="text-align:center;">
+                    <p>Terjadi kesalahan saat memperbarui buku</p>
+                    <p style="font-size:14px;color:#777;">${error.message}</p>
+                </div>
+            `,
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Mengerti'
+        });
+    }
 }
 
 //Menghapus data buku
 async function deleteBook(bookId) {
-  if (!confirm("Are you sure you want to delete this book?")) {
-    return;
-  }
+  // Confirmation dialog with warning icon
+  const result = await Swal.fire({
+    title: 'Hapus Buku?',
+    text: "Anda tidak dapat mengembalikan data yang telah dihapus!",
+    icon: 'warning',
+    showCloseButton: true, 
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal',
+    reverseButtons: true,
+    backdrop: `
+      rgba(0,0,0,0.4)
+      url("/images/fire.gif")
+      left top
+      no-repeat
+    `,
+    showClass: {
+      popup: 'animate__animated animate__fadeInDown'
+    },
+    hideClass: {
+      popup: 'animate__animated animate__fadeOutUp'
+    }
+  });
+
+  if (!result.isConfirmed) return;
 
   try {
+    // Show loading indicator
+    Swal.fire({
+      title: 'Menghapus...',
+      text: 'Sedang menghapus buku',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     await deleteDoc(doc(db, 'books', bookId));
-    alert('Book deleted successfully!');
-    await loadBooks(db);
+
+    // Success notification
+    await Swal.fire({
+      title: 'Terhapus!',
+      text: 'Buku berhasil dihapus',
+      icon: 'success',
+      timer: 2000,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      willClose: () => {
+        loadBooks(db);
+      }
+    });
+
   } catch (error) {
     console.error("Error deleting book: ", error);
-    alert("Failed to delete book: " + error.message);
+    
+    // Error notification
+    await Swal.fire({
+      title: 'Gagal!',
+      html: `
+        <div style="text-align:center;">
+          <p>Gagal menghapus buku</p>
+          <p style="font-size:14px;color:#777;">${error.message}</p>
+        </div>
+      `,
+      icon: 'error',
+      confirmButtonText: 'Mengerti',
+      confirmButtonColor: '#3085d6'
+    });
   }
 }
+
+
+// Logout 
+document.getElementById('logout').addEventListener("click", (e) => {
+    e.preventDefault();
+
+    Swal.fire({
+        title: 'Yakin ingin logout?',
+        text: "Anda akan keluar dan kembali ke halaman login.",
+        icon: 'warning',
+        showCancelButton: true,
+        showCloseButton: true, 
+        allowOutsideClick: true, // klik di luar = batal
+        allowEscapeKey: true, // tekan ESC = batal
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, logout',
+        cancelButtonText: 'Tidak'
+    }).then((result) => {
+        // Pastikan hanya logout jika tombol 'Ya' ditekan
+        if (result.isConfirmed) {
+            signOut(auth).then(() => {
+                sessionStorage.removeItem('currentUser');
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Gagal logout:", error);
+                Swal.fire('Gagal', error.message, 'error');
+            });
+        }
+        // Jika dibatalkan (klik luar, tombol Tidak, atau X), tidak melakukan apa-apa
+    });
+});
