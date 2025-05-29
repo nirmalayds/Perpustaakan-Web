@@ -614,11 +614,30 @@ window.onload = function() {
 // Fungsi Logout
 document.getElementById('logout').addEventListener("click", (e) => {
     e.preventDefault();
-    signOut(auth).then(() => {
-        sessionStorage.removeItem('currentUser');
-        window.location.href = "login.html";
-    }).catch((error) => {
-        console.error("Gagal logout:", error);
-        alert("Gagal logout: " + error.message);
-      });
-})
+
+    Swal.fire({
+        title: 'Yakin ingin logout?',
+        text: "Anda akan keluar dan kembali ke halaman login.",
+        icon: 'warning',
+        showCancelButton: true,
+        showCloseButton: true, // ikon X
+        allowOutsideClick: true, // klik di luar = batal
+        allowEscapeKey: true, // tekan ESC = batal
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, logout',
+        cancelButtonText: 'Tidak'
+    }).then((result) => {
+        // Pastikan hanya logout jika tombol 'Ya' ditekan
+        if (result.isConfirmed) {
+            signOut(auth).then(() => {
+                sessionStorage.removeItem('currentUser');
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Gagal logout:", error);
+                Swal.fire('Gagal', error.message, 'error');
+            });
+        }
+        // Jika dibatalkan (klik luar, tombol Tidak, atau X), tidak melakukan apa-apa
+    });
+});
